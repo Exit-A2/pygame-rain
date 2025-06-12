@@ -3,16 +3,6 @@ import random
 import ctypes
 import math
 
-SCREEN_WIDTH = 1280
-SCREEN_HEIGHT = 720
-ACC = 0.1
-COLOR = (128, 128, 128)
-
-pygame.init()
-ctypes.windll.user32.SetProcessDPIAware()
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-clock = pygame.time.Clock()
-running = True
 
 drops = []
 freq = 10  # 雨粒の密度
@@ -20,10 +10,20 @@ wind = 0  # 風の強さ
 time = 0
 global_yspd = 20
 pre_global_ysd = global_yspd
+SCREEN_WIDTH = 1280
+SCREEN_HEIGHT = 720
 DROP_LENGTH = 2  # 2以上
 X_DIPERSION = 0.5  # X方向の分散
 Y_DIPERSION = 5  # Y方向の分散
 RADIUS = 800
+ACC = 0.1
+COLOR = (255, 255, 255)
+
+pygame.init()
+ctypes.windll.user32.SetProcessDPIAware()
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+clock = pygame.time.Clock()
+running = True
 
 
 class Drop:
