@@ -8,6 +8,7 @@ drops = []
 freq = 10  # 雨粒の密度
 wind = 0  # 風の強さ
 time = 0
+last_drop = 0
 global_yspd = 20
 pre_global_ysd = global_yspd
 SCREEN_WIDTH = 1280
@@ -61,6 +62,21 @@ class Drop:
             )
 
 
+def drop_drop():
+    direction = math.atan2(wind / 4, global_yspd) + random.uniform(
+        -math.pi * 0.5, math.pi * 0.5
+    )  # 雨の出現位置用の向き(ラジアン)
+    drops.append(
+        Drop(
+            SCREEN_WIDTH / 2 - math.sin(direction) * RADIUS,
+            SCREEN_HEIGHT / 2 - math.cos(direction) * RADIUS,
+            random.uniform(-X_DIPERSION, X_DIPERSION),
+            random.uniform(global_yspd - Y_DIPERSION, global_yspd + Y_DIPERSION),
+            1,
+        )
+    )
+
+
 while running:
     time += 1
     screen.fill((0, 0, 0))
@@ -68,29 +84,14 @@ while running:
     wind = (pygame.mouse.get_pos()[0] - SCREEN_WIDTH / 2) / 5
     global_yspd = pygame.mouse.get_pos()[1] / 10
 
-    for i in range(int(freq)):
-        direction = math.atan2(wind / 4, global_yspd) + random.uniform(
-            -math.pi * 0.5, math.pi * 0.5
-        )  # 雨の出現位置用の向き(ラジアン)
-        drops.append(
-            Drop(
-                SCREEN_WIDTH / 2 - math.sin(direction) * RADIUS,
-                SCREEN_HEIGHT / 2 - math.cos(direction) * RADIUS,
-                random.uniform(-X_DIPERSION, X_DIPERSION),
-                random.uniform(global_yspd - Y_DIPERSION, global_yspd + Y_DIPERSION),
-                1,
-            )
-        )
-
-    if pygame.mouse.get_pressed(3)[0]:
-        global_yspd = 0
-        wind = 0
-        freq = 0
-        for x in drops:
-            x.xspd = 0
-            x.yspd = 0
+    if 0 < freq < 1:
+        if time - last_drop >= 1 / freq:
+            drop_drop()
+            last_drop = time
     else:
-        freq = 10
+        for i in range(int(freq)):
+            drop_drop()
+        last_drop = time
 
     for x in drops:
         x.yspd += global_yspd - pre_global_ysd
