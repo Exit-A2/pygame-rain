@@ -28,6 +28,16 @@ running = True
 
 
 class Drop:
+    """雨粒
+
+    Args:
+        x (float): 出現するX座標
+        y (float): 出現するY座標
+        xspd (float): X初速
+        yspd (float): Y初速
+        depth (float): 奥行き
+    """
+
     def __init__(self, x, y, xspd, yspd, depth):
         self.x = x
         self.y = y
