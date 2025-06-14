@@ -13,6 +13,7 @@ global_yspd = 20
 pre_global_ysd = global_yspd
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
+FRAME_RATE = 60
 
 DROP_LENGTH = 2  # 2以上
 DROP_WIDTH = 4
@@ -112,7 +113,7 @@ while running:
 
     [x.update() for x in drops]
     pygame.display.flip()
-    clock.tick(60)
+    clock.tick(FRAME_RATE)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
