@@ -13,12 +13,17 @@ global_yspd = 20
 pre_global_ysd = global_yspd
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 720
+
 DROP_LENGTH = 2  # 2以上
+DROP_WIDTH = 4
+DROP_DEPTH = 1
+DROP_COLOR = (128, 128, 128)
+
 X_DIPERSION = 0.5  # X方向の分散
 Y_DIPERSION = 5  # Y方向の分散
+DIR_RANGE = math.pi  # 雨の範囲(ラジアン)
 RADIUS = 800
 ACC = 0.1
-COLOR = (255, 255, 255)
 
 pygame.init()
 ctypes.windll.user32.SetProcessDPIAware()
@@ -61,20 +66,18 @@ class Drop:
             self.log.pop(0)
             self.log.append((self.x, self.y))
 
-            width = 5 / self.depth
-
             pygame.draw.lines(
                 screen,
-                COLOR,
+                DROP_COLOR,
                 True,
                 self.log,
-                int(width),
+                DROP_WIDTH,
             )
 
 
 def drop_drop():
     direction = math.atan2(wind / 4, global_yspd) + random.uniform(
-        -math.pi * 0.5, math.pi * 0.5
+        -DIR_RANGE * 0.5, DIR_RANGE * 0.5
     )  # 雨の出現位置用の向き(ラジアン)
     drops.append(
         Drop(
@@ -82,7 +85,7 @@ def drop_drop():
             SCREEN_HEIGHT / 2 - math.cos(direction) * RADIUS,
             random.uniform(-X_DIPERSION, X_DIPERSION),
             random.uniform(global_yspd - Y_DIPERSION, global_yspd + Y_DIPERSION),
-            1,
+            DROP_DEPTH,
         )
     )
 
