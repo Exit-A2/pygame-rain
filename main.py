@@ -2,6 +2,7 @@ import pygame
 import random
 import ctypes
 import math
+import pygame_record as rec
 
 
 drops = []
@@ -92,11 +93,13 @@ def drop_drop():
     )
 
 
+rec.key(SCREEN_WIDTH, SCREEN_HEIGHT, 60)
 while running:
     time += 1
     screen.fill((0, 0, 0))
     surface.fill((0, 0, 0))
 
+    # マウス座標で動かす(編集モード実装時に消す)
     wind = (pygame.mouse.get_pos()[0] - SCREEN_WIDTH / 2) / 5
     global_yspd = pygame.mouse.get_pos()[1] / 10
 
@@ -114,10 +117,12 @@ while running:
     pre_global_ysd = global_yspd
 
     [x.update() for x in drops]
+    rec.draw(surface)
     screen.blit(surface, (0, 0))
     pygame.display.flip()
     clock.tick(FRAME_RATE)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            rec.stop()
             running = False
