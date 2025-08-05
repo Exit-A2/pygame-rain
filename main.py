@@ -28,7 +28,7 @@ RADIUS = 800
 ACC = 0.1
 
 pygame.init()
-ctypes.windll.user32.SetProcessDPIAware()
+ctypes.windll.user32.SetProcessDPIAware()  # ウィンドウサイズの誤挙動を防ぐ
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
