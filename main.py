@@ -29,6 +29,7 @@ ACC = 0.1
 pygame.init()
 ctypes.windll.user32.SetProcessDPIAware()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 running = True
 
@@ -68,7 +69,7 @@ class Drop:
             self.log.append((self.x, self.y))
 
             pygame.draw.lines(
-                screen,
+                surface,
                 DROP_COLOR,
                 True,
                 self.log,
@@ -94,6 +95,7 @@ def drop_drop():
 while running:
     time += 1
     screen.fill((0, 0, 0))
+    surface.fill((0, 0, 0))
 
     wind = (pygame.mouse.get_pos()[0] - SCREEN_WIDTH / 2) / 5
     global_yspd = pygame.mouse.get_pos()[1] / 10
@@ -112,6 +114,7 @@ while running:
     pre_global_ysd = global_yspd
 
     [x.update() for x in drops]
+    screen.blit(surface, (0, 0))
     pygame.display.flip()
     clock.tick(FRAME_RATE)
 
