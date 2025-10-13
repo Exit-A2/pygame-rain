@@ -34,6 +34,17 @@ RADIUS = 800  # 雨の出現半径
 ACC = 0.1  # 加速度
 
 
+def open_project() -> str | None:
+    path = filedialog.askopenfilename(
+        title="Open Project File",
+        defaultextension="rain",
+        filetypes=[("Rain Project File", "*.rain")],
+        initialdir=os.getcwd(),
+    )
+    if pathlib.Path(path).exists():
+        return path
+
+
 def select_window():
     root = tk.Tk("SBANRain")
     root.geometry("280x120")
@@ -73,17 +84,6 @@ def select_window():
     root.quit()
 
 
-# プロジェクトファイルを開く
-path = filedialog.askopenfilename(
-    title="Open Project File",
-    defaultextension="rain",
-    filetypes=[("Rain Project File", "*.rain")],
-    initialdir=os.getcwd(),
-)
-if pathlib.Path(path).exists():
-    select_window()
-
-
 pygame.init()
 ctypes.windll.user32.SetProcessDPIAware()  # ウィンドウサイズの誤挙動を防ぐ
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -91,6 +91,7 @@ surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 running = True
 pre_global_ysd = global_yspd
+path = ""
 
 
 class Drop:
@@ -153,6 +154,18 @@ def drop_drop():
 
 # rec.key(SCREEN_WIDTH, SCREEN_HEIGHT, 60)
 while running:
+    if path is None:
+        open_project()
+        select = select_window()
+        if select == "RENDER":
+            state = "RENDER"
+        elif select == "OPEN":
+            continue
+        elif select == "QUIT":
+            break
+        elif select == "PLAY":
+            state = "PLAY"
+
     time += 1
     screen.fill((0, 0, 0))
     surface.fill((0, 0, 0))
