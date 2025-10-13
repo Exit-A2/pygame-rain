@@ -3,11 +3,12 @@ import random
 import ctypes
 import math
 import pygame_record as rec
-import tkinter
+import tkinter as tk
 from tkinter import filedialog
 import os
+import pathlib
 
-
+state = "FREE"
 drops = []
 
 # 動画の途中で変えられる
@@ -32,13 +33,55 @@ DIR_RANGE = math.pi  # 雨の範囲/ラジアン
 RADIUS = 800  # 雨の出現半径
 ACC = 0.1  # 加速度
 
+
+def select_window():
+    root = tk.Tk("SBANRain")
+    root.geometry("280x120")
+    root.grid_columnconfigure(0, weight=1)
+    root.grid_columnconfigure(1, weight=1)
+    root.grid_rowconfigure(0, weight=1)
+
+    frame1 = tk.Frame(root)
+    frame1.grid_rowconfigure(0, weight=1)
+    frame1.grid_rowconfigure(1, weight=1)
+    frame1.grid_rowconfigure(2, weight=1)
+    button1 = tk.Button(frame1, text="Render")
+    button2 = tk.Button(frame1, text="Open")
+    button3 = tk.Button(frame1, text="Quit", command=root.destroy)
+    button1.grid(row=0)
+    button2.grid(row=1)
+    button3.grid(row=2)
+
+    frame2 = tk.Frame(root)
+    frame2.grid_columnconfigure(0, weight=1)
+    frame2.grid_columnconfigure(2, weight=1)
+    frame2.grid_rowconfigure(0, weight=1)
+    frame2.grid_rowconfigure(1, weight=1)
+    entry1 = tk.Entry(frame2, width=6, justify=tk.RIGHT)  # 再生位置分
+    label = tk.Label(frame2, text=":")
+    entry2 = tk.Entry(frame2, width=6)  # 再生位置秒
+    button4 = tk.Button(frame2, text="Play")
+    entry1.grid(row=0, column=0, sticky=tk.E)
+    label.grid(row=0, column=1)
+    entry2.grid(row=0, column=2, sticky=tk.W)
+    button4.grid(row=1, column=0, columnspan=3)
+
+    frame1.grid(row=0, column=0)
+    frame2.grid(row=0, column=1)
+
+    root.mainloop()
+    root.quit()
+
+
 # プロジェクトファイルを開く
-filedialog.askopenfilename(
+path = filedialog.askopenfilename(
     title="Open Project File",
     defaultextension="rain",
     filetypes=[("Rain Project File", "*.rain")],
     initialdir=os.getcwd(),
 )
+if pathlib.Path(path).exists():
+    select_window()
 
 
 pygame.init()
@@ -47,7 +90,6 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 running = True
-state = "playing"
 pre_global_ysd = global_yspd
 
 
