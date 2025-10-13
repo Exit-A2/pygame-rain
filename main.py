@@ -3,29 +3,43 @@ import random
 import ctypes
 import math
 import pygame_record as rec
+import tkinter
+from tkinter import filedialog
+import os
 
 
 drops = []
-freq = 10  # 雨粒の密度
+
+# 動画の途中で変えられる
+freq = 1  # 雨粒の密度
 wind = 0  # 風の強さ
 time = 0
 last_drop = 0
 global_yspd = 20
-pre_global_ysd = global_yspd
-SCREEN_WIDTH = 1280
-SCREEN_HEIGHT = 720
-FRAME_RATE = 60
 
-DROP_LENGTH = 2  # 2以上
-DROP_WIDTH = 4
-DROP_DEPTH = 1
-DROP_COLOR = (128, 128, 128)
 
+# 動画の途中で変えられない
+SCREEN_WIDTH = 1280  # 横解像度/ピクセル
+SCREEN_HEIGHT = 720  # 縦解像度/ピクセル
+FRAME_RATE = 60  # フレームレート
+DROP_LENGTH = 2  # 雨粒の長さ/フレーム
+DROP_WIDTH = 4  # 雨粒の太さ/ピクセル
+DROP_DEPTH = 1  # 奥行き
+DROP_COLOR = (128, 128, 128)  # 雨粒の色
 X_DIPERSION = 0.5  # X方向の分散
 Y_DIPERSION = 5  # Y方向の分散
-DIR_RANGE = math.pi  # 雨の範囲(ラジアン)
-RADIUS = 800
-ACC = 0.1
+DIR_RANGE = math.pi  # 雨の範囲/ラジアン
+RADIUS = 800  # 雨の出現半径
+ACC = 0.1  # 加速度
+
+# プロジェクトファイルを開く
+filedialog.askopenfilename(
+    title="Open Project File",
+    defaultextension="rain",
+    filetypes=[("Rain Project File", "*.rain")],
+    initialdir=os.getcwd(),
+)
+
 
 pygame.init()
 ctypes.windll.user32.SetProcessDPIAware()  # ウィンドウサイズの誤挙動を防ぐ
@@ -33,6 +47,8 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 running = True
+state = "playing"
+pre_global_ysd = global_yspd
 
 
 class Drop:
@@ -93,7 +109,7 @@ def drop_drop():
     )
 
 
-rec.key(SCREEN_WIDTH, SCREEN_HEIGHT, 60)
+# rec.key(SCREEN_WIDTH, SCREEN_HEIGHT, 60)
 while running:
     time += 1
     screen.fill((0, 0, 0))
@@ -117,12 +133,12 @@ while running:
     pre_global_ysd = global_yspd
 
     [x.update() for x in drops]
-    rec.draw(surface)
+    # rec.draw(surface)
     screen.blit(surface, (0, 0))
     pygame.display.flip()
     clock.tick(FRAME_RATE)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            rec.stop()
+            # rec.stop()
             running = False
