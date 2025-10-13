@@ -16,6 +16,7 @@ ctypes.windll.user32.SetProcessDPIAware()  # ウィンドウサイズの誤挙�
 screen_width = 1920
 screen_height = 1080
 
+focus = "None"
 border_position = 0.6
 timeline_side_x = 200
 
@@ -42,7 +43,7 @@ while running:
         colors["border"],
         (0, border_y),
         (current_w, border_y),
-        5,
+        6,
     )
     if border_y - 5 < pygame.mouse.get_pos()[1] < border_y + 5:
         cursor = pygame.SYSTEM_CURSOR_SIZENS
@@ -51,7 +52,7 @@ while running:
             border_position = border_y / current_h
 
     # プレビュー
-    preview_height = current_h * border_position - 2
+    preview_height = current_h * border_position - 3
     preview_width = preview_height / screen_height * screen_width
     pygame.draw.rect(
         screen,
@@ -62,5 +63,11 @@ while running:
     )
 
     # タイムライン
+    pygame.draw.rect(
+        screen,
+        colors["tl_side_bg"],
+        pygame.Rect(0, border_y + 4, 200, current_h - border_y - 4),
+    )
+
     pygame.mouse.set_cursor(cursor)
     pygame.display.flip()
