@@ -46,6 +46,8 @@ def open_project() -> str | None:
 
 
 def select_window():
+    select = ["FREE"]
+
     root = tk.Tk("SBANRain")
     root.geometry("280x120")
     root.grid_columnconfigure(0, weight=1)
@@ -56,12 +58,36 @@ def select_window():
     frame1.grid_rowconfigure(0, weight=1)
     frame1.grid_rowconfigure(1, weight=1)
     frame1.grid_rowconfigure(2, weight=1)
-    button1 = tk.Button(frame1, text="Render")
-    button2 = tk.Button(frame1, text="Open")
-    button3 = tk.Button(frame1, text="Quit", command=root.destroy)
+    frame1.grid_rowconfigure(3, weight=1)
+
+    def cmd_render():
+        select = ["RENDER"]
+        root.destroy()
+
+    def cmd_open():
+        select = ["OPEN"]
+        root.destroy()
+
+    def cmd_free():
+        select = ["FREE"]
+        root.destroy()
+
+    def cmd_quit():
+        select = ["QUIT"]
+        root.destroy()
+
+    def cmd_play():
+        select = ["PLAY", int(60 * int(entry1.get()) + int(entry2.get()))]
+        root.destroy()
+
+    button1 = tk.Button(frame1, text="Render", command=cmd_render)
+    button2 = tk.Button(frame1, text="Open", command=cmd_open)
+    button3 = tk.Button(frame1, text="FreePlay", command=cmd_free)
+    button4 = tk.Button(frame1, text="Quit", command=cmd_quit)
     button1.grid(row=0)
     button2.grid(row=1)
     button3.grid(row=2)
+    button4.grid(row=3)
 
     frame2 = tk.Frame(root)
     frame2.grid_columnconfigure(0, weight=1)
@@ -71,7 +97,7 @@ def select_window():
     entry1 = tk.Entry(frame2, width=6, justify=tk.RIGHT)  # 再生位置分
     label = tk.Label(frame2, text=":")
     entry2 = tk.Entry(frame2, width=6)  # 再生位置秒
-    button4 = tk.Button(frame2, text="Play")
+    button4 = tk.Button(frame2, text="Play", command=cmd_play)
     entry1.grid(row=0, column=0, sticky=tk.E)
     label.grid(row=0, column=1)
     entry2.grid(row=0, column=2, sticky=tk.W)
@@ -81,7 +107,8 @@ def select_window():
     frame2.grid(row=0, column=1)
 
     root.mainloop()
-    root.quit()
+
+    return select
 
 
 pygame.init()
@@ -92,6 +119,7 @@ clock = pygame.time.Clock()
 running = True
 pre_global_ysd = global_yspd
 path = ""
+frame = 0
 
 
 class Drop:
@@ -152,19 +180,20 @@ def drop_drop():
     )
 
 
-# rec.key(SCREEN_WIDTH, SCREEN_HEIGHT, 60)
 while running:
-    if path is None:
+    if path == "":
         open_project()
         select = select_window()
-        if select == "RENDER":
+        if select[0] == "RENDER":
             state = "RENDER"
-        elif select == "OPEN":
+            rec.key(SCREEN_WIDTH, SCREEN_HEIGHT, 60)
+            frame = 0
+        elif select[0] == "OPEN":
             continue
-        elif select == "QUIT":
+        elif select[0] == "QUIT":
             break
-        elif select == "PLAY":
-            state = "PLAY"
+        elif select[0] == "PLAY":
+            frame = select[1]
 
     time += 1
     screen.fill((0, 0, 0))
