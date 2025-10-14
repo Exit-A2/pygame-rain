@@ -1,0 +1,25 @@
+sbanrain:
+  constant:
+    screen_width: 1920
+    screen_height: 1080
+    frame_rate: 60
+    drop_length: 2
+    drop_width: 4
+    drop_depth: 1
+    drop_color: 7F7F7F
+    x_dipersion: 0.5
+    y_dipersion: 5
+    dir_range: 3.1415926
+    radius: 1200
+    acc: 0.1
+  frenquency:
+    0: 0.1
+    299: 0.1
+    300: 0.5
+  wind:
+    0: 0
+    299: 30
+  speed:
+    0: 12
+    299: 20
+    700: 100
