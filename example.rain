@@ -3,6 +3,7 @@ sbanrain:
     screen_width: 1920
     screen_height: 1080
     frame_rate: 60
+    length: 1000
     drop_length: 2
     drop_width: 4
     drop_depth: 1
