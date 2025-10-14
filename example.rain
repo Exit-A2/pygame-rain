@@ -1,5 +1,5 @@
 sbanrain:
-  constant:
+  constants:
     screen_width: 1920
     screen_height: 1080
     frame_rate: 60
