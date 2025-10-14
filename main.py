@@ -20,7 +20,7 @@ drops = []
 # 動画の途中で変えられる
 freq = 1  # 雨粒の密度
 wind = 0  # 風の強さ
-global_yspd = 20
+speed = 20
 
 # 動画の途中で変えられない
 SCREEN_WIDTH = 1280  # 横解像度/ピクセル
@@ -28,7 +28,7 @@ SCREEN_HEIGHT = 720  # 縦解像度/ピクセル
 FRAME_RATE = 60  # フレームレート
 DROP_LENGTH = 2  # 雨粒の長さ/フレーム
 DROP_WIDTH = 4  # 雨粒の太さ/ピクセル
-DROP_COLOR = (128, 128, 128)  # 雨粒の色
+DROP_COLOR = (128, 128, 128)  # 雨粒の色/RGB
 X_DIPERSION = 0.5  # X方向の分散
 Y_DIPERSION = 5  # Y方向の分散
 DIR_RANGE = math.pi  # 雨の範囲/ラジアン
@@ -128,7 +128,7 @@ surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 running = True
 last_drop = 0
-pre_global_ysd = global_yspd
+pre_speed = speed
 path = ""
 frame = 0
 
@@ -175,7 +175,7 @@ class Drop:
 
 
 def drop_drop():
-    direction = math.atan2(wind / 4, global_yspd) + random.uniform(
+    direction = math.atan2(wind / 4, speed) + random.uniform(
         -DIR_RANGE * 0.5, DIR_RANGE * 0.5
     )  # 雨の出現位置用の向き(ラジアン)
     drops.append(
@@ -183,7 +183,7 @@ def drop_drop():
             SCREEN_WIDTH / 2 - math.sin(direction) * RADIUS,
             SCREEN_HEIGHT / 2 - math.cos(direction) * RADIUS,
             random.uniform(-X_DIPERSION, X_DIPERSION),
-            random.uniform(global_yspd - Y_DIPERSION, global_yspd + Y_DIPERSION),
+            random.uniform(speed - Y_DIPERSION, speed + Y_DIPERSION),
         )
     )
 
@@ -230,8 +230,9 @@ while running:
     if state == "FREE":
         # マウス座標で動かす
         wind = (pygame.mouse.get_pos()[0] - SCREEN_WIDTH / 2) / 5
-        global_yspd = pygame.mouse.get_pos()[1] / 10
+        speed = pygame.mouse.get_pos()[1] / 10
 
+    # 雨粒を落とす
     if 0 < freq < 1:
         if frame - last_drop >= 1 / freq:
             drop_drop()
@@ -241,11 +242,13 @@ while running:
             drop_drop()
         last_drop = frame
 
-    for x in drops:
-        x.yspd += global_yspd - pre_global_ysd
-    pre_global_ysd = global_yspd
+    # 全体のY速度を効かせる
+    for drop in drops:
+        drop.yspd += speed - pre_speed
+    pre_speed = speed
 
-    [x.update() for x in drops]
+    [drop.update() for drop in drops]
+
     if state == "RENDER":
         rec.draw(surface)
     screen.blit(surface, (0, 0))
