@@ -118,7 +118,39 @@ def select_window():
 
 
 def load_project(path):
-    pass
+    f = open(path, encoding="utf-8")
+    project = yaml.safe_load(f)["sbanrain"]
+    assert (
+        "constants" in project
+        and "frenquency" in project
+        and "wind" in project
+        and "speed" in project
+    )
+    constants = project["constants"]
+    f.close()
+    global SCREEN_WIDTH
+    global SCREEN_HEIGHT
+    global FRAME_RATE
+    global DROP_LENGTH
+    global DROP_WIDTH
+    global DROP_COLOR
+    global X_DIPERSION
+    global Y_DIPERSION
+    global DIR_RANGE
+    global RADIUS
+    global ACC
+    SCREEN_WIDTH = constants["screen_width"]
+    SCREEN_HEIGHT = constants["screen_height"]
+    FRAME_RATE = constants["frame_rate"]
+    DROP_LENGTH = constants["drop_length"]
+    DROP_WIDTH = constants["drop_width"]
+    DROP_COLOR = constants["drop_color"]
+    X_DIPERSION = constants["x_dipersion"]
+    Y_DIPERSION = constants["x_dipersion"]
+    DIR_RANGE = constants["dir_range"]
+    RADIUS = constants["radius"]
+    ACC = constants["acc"]
+    return project
 
 
 pygame.init()
