@@ -12,7 +12,7 @@ import yaml
 state = "PLAY"
 """State一覧
 RENDER: レンダリング中
-FINISH: レンダリング終了
+FINISH: レンダリング・再生終了
 FREE: フリープレイ(マウスで雨を操れる)
 PLAY: 再生中"""
 drops = []
@@ -26,6 +26,7 @@ speed = 20
 SCREEN_WIDTH = 1280  # 横解像度/ピクセル
 SCREEN_HEIGHT = 720  # 縦解像度/ピクセル
 FRAME_RATE = 60  # フレームレート
+LENGTH = 1  # 動画の長さ/フレーム
 DROP_LENGTH = 2  # 雨粒の長さ/フレーム
 DROP_WIDTH = 4  # 雨粒の太さ/ピクセル
 DROP_COLOR = (128, 128, 128)  # 雨粒の色/RGB
@@ -83,6 +84,7 @@ def select_window():
         root.destroy()
 
     def cmd_play():
+        nonlocal select
         select = ["PLAY", int(60 * int(entry1.get()) + int(entry2.get()))]
         root.destroy()
 
@@ -117,12 +119,12 @@ def select_window():
     return select
 
 
-def load_project(path):
+def load_project(path: str):
     f = open(path, encoding="utf-8")
     project = yaml.safe_load(f)["sbanrain"]
     assert (
         "constants" in project
-        and "frenquency" in project
+        and "frequency" in project
         and "wind" in project
         and "speed" in project
     )
@@ -131,6 +133,7 @@ def load_project(path):
     global SCREEN_WIDTH
     global SCREEN_HEIGHT
     global FRAME_RATE
+    global LENGTH
     global DROP_LENGTH
     global DROP_WIDTH
     global DROP_COLOR
@@ -142,9 +145,14 @@ def load_project(path):
     SCREEN_WIDTH = constants["screen_width"]
     SCREEN_HEIGHT = constants["screen_height"]
     FRAME_RATE = constants["frame_rate"]
+    LENGTH = constants["length"]
     DROP_LENGTH = constants["drop_length"]
     DROP_WIDTH = constants["drop_width"]
-    DROP_COLOR = constants["drop_color"]
+    DROP_COLOR = (
+        int(constants["drop_color"][0:2], 16),
+        int(constants["drop_color"][2:4], 16),
+        int(constants["drop_color"][4:6], 16),
+    )
     X_DIPERSION = constants["x_dipersion"]
     Y_DIPERSION = constants["x_dipersion"]
     DIR_RANGE = constants["dir_range"]
@@ -163,6 +171,7 @@ last_drop = 0
 pre_speed = speed
 path = ""
 frame = 0
+timeline = {}
 
 
 class Drop:
@@ -228,6 +237,27 @@ def get_pressed():
     return pressed
 
 
+def value_from_timeline(timeline: dict, frame: int):
+    if frame in timeline:
+        return timeline[frame]
+    keys = sorted(timeline.keys())
+    pre_pair = [0, timeline[keys[0]]]
+    next_pair = [LENGTH, timeline[keys[-1]]]
+    for key in keys:
+        if key < frame:
+            pre_pair = [key, timeline[key]]
+        elif frame < key:
+            next_pair = [key, timeline[key]]
+            break
+
+    """y=ax+bにおいてq1=ap1+b, q2=ap2+bとしたとき
+    a=(q2-q1)/(p2-p1)
+    b=q1-ap1"""
+    a = (next_pair[1] - pre_pair[1]) / (next_pair[0] - pre_pair[0])
+    b = pre_pair[1] - a * pre_pair[0]
+    return a * frame + b
+
+
 while running:
     if (
         (path == "" and not state == "FREE")
@@ -235,12 +265,14 @@ while running:
         or state == "FINISH"
     ):
         if path == "":
-            open_project()
+            path = open_project()
         select = select_window()
         if select[0] == "CONTINUE":
             pass
         elif select[0] == "RENDER":
             state = "RENDER"
+            timeline = load_project(path)
+            print(DROP_COLOR)
             rec.key(SCREEN_WIDTH, SCREEN_HEIGHT, 60)
             frame = 0
         elif select[0] == "OPEN":
@@ -252,14 +284,19 @@ while running:
                 rec.stop()
             state = "FREE"
         elif select[0] == "PLAY":
-            frame = select[1]
             state = "PLAY"
+            timeline = load_project(path)
+            frame = select[1]
 
     frame += 1
     screen.fill((0, 0, 0))
     surface.fill((0, 0, 0))
 
-    if state == "FREE":
+    if state == "RENDER" or state == "PLAY":
+        freq = value_from_timeline(timeline["frequency"], frame)
+        wind = value_from_timeline(timeline["wind"], frame)
+        speed = value_from_timeline(timeline["speed"], frame)
+    elif state == "FREE":
         # マウス座標で動かす
         wind = (pygame.mouse.get_pos()[0] - SCREEN_WIDTH / 2) / 5
         speed = pygame.mouse.get_pos()[1] / 10
@@ -281,11 +318,20 @@ while running:
 
     [drop.update() for drop in drops]
 
-    if state == "RENDER":
-        rec.draw(surface)
     screen.blit(surface, (0, 0))
     pygame.display.flip()
-    clock.tick(FRAME_RATE)
+    if state == "RENDER":
+        rec.draw(surface)
+        if frame >= LENGTH:
+            state = "FINISH"
+            rec.stop()
+    elif state == "PLAY":
+        clock.tick(FRAME_RATE)
+        if frame >= LENGTH:
+            state = "FINISH"
+        print(f"freq: {freq} wind: {wind} speed: {speed}")
+    else:
+        clock.tick(FRAME_RATE)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

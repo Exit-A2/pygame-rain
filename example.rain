@@ -3,7 +3,7 @@ sbanrain:
     screen_width: 1920
     screen_height: 1080
     frame_rate: 60
-    length: 1000
+    length: 900
     drop_length: 2
     drop_width: 4
     drop_depth: 1
@@ -13,14 +13,25 @@ sbanrain:
     dir_range: 3.1415926
     radius: 1200
     acc: 0.1
-  frenquency:
+  frequency:
     0: 0.1
-    299: 0.1
-    300: 0.5
+    299: 3
+    309: 0
+    350: 0
+    351: 10
   wind:
     0: 0
-    299: 30
+    299: 5
+    309: 0
+    350: 0
+    351: 90
+    400: 90
+    550: 0
   speed:
     0: 12
-    299: 20
-    700: 100
+    299: 30
+    309: 0
+    350: 0
+    351: 0
+    400: 0
+    500: 10
