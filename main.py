@@ -28,7 +28,6 @@ SCREEN_HEIGHT = 720  # 縦解像度/ピクセル
 FRAME_RATE = 60  # フレームレート
 DROP_LENGTH = 2  # 雨粒の長さ/フレーム
 DROP_WIDTH = 4  # 雨粒の太さ/ピクセル
-DROP_DEPTH = 1  # 奥行き
 DROP_COLOR = (128, 128, 128)  # 雨粒の色
 X_DIPERSION = 0.5  # X方向の分散
 Y_DIPERSION = 5  # Y方向の分散
@@ -142,16 +141,14 @@ class Drop:
         y (float): 出現するY座標
         xspd (float): X初速
         yspd (float): Y初速
-        depth (float): 奥行き
     """
 
-    def __init__(self, x, y, xspd, yspd, depth):
+    def __init__(self, x, y, xspd, yspd):
         self.x = x
         self.y = y
         self.log = [(self.x, self.y) for i in range(DROP_LENGTH)]  # 座標の履歴
         self.xspd = xspd
         self.yspd = yspd
-        self.depth = depth
 
     def update(self):
         if (
@@ -187,7 +184,6 @@ def drop_drop():
             SCREEN_HEIGHT / 2 - math.cos(direction) * RADIUS,
             random.uniform(-X_DIPERSION, X_DIPERSION),
             random.uniform(global_yspd - Y_DIPERSION, global_yspd + Y_DIPERSION),
-            DROP_DEPTH,
         )
     )
 
