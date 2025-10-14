@@ -202,7 +202,8 @@ class Drop:
             self.y += self.yspd
             self.x += wind
             self.x += self.xspd
-            self.yspd += ACC
+            if not speed == 0:
+                self.yspd += ACC
             self.log.pop(0)
             self.log.append((self.x, self.y))
 
