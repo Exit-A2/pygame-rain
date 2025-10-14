@@ -7,17 +7,20 @@ import tkinter as tk
 from tkinter import filedialog
 import os
 import pathlib
+import yaml
 
-state = "FREE"
+state = "PLAY"
+"""State一覧
+RENDER: レンダリング中
+FINISH: レンダリング終了
+FREE: フリープレイ(マウスで雨を操れる)
+PLAY: 再生中"""
 drops = []
 
 # 動画の途中で変えられる
 freq = 1  # 雨粒の密度
 wind = 0  # 風の強さ
-time = 0
-last_drop = 0
 global_yspd = 20
-
 
 # 動画の途中で変えられない
 SCREEN_WIDTH = 1280  # 横解像度/ピクセル
@@ -46,7 +49,7 @@ def open_project() -> str | None:
 
 
 def select_window():
-    select = ["FREE"]
+    select = ["CONTINUE"]
 
     root = tk.Tk("SBANRain")
     root.geometry("280x120")
@@ -60,30 +63,34 @@ def select_window():
     frame1.grid_rowconfigure(2, weight=1)
     frame1.grid_rowconfigure(3, weight=1)
 
+    def cmd_continue():
+        nonlocal select
+        select = ["CONTINUE"]
+        root.destroy()
+
     def cmd_render():
+        nonlocal select
         select = ["RENDER"]
         root.destroy()
 
     def cmd_open():
+        nonlocal select
         select = ["OPEN"]
         root.destroy()
 
     def cmd_free():
+        nonlocal select
         select = ["FREE"]
-        root.destroy()
-
-    def cmd_quit():
-        select = ["QUIT"]
         root.destroy()
 
     def cmd_play():
         select = ["PLAY", int(60 * int(entry1.get()) + int(entry2.get()))]
         root.destroy()
 
-    button1 = tk.Button(frame1, text="Render", command=cmd_render)
-    button2 = tk.Button(frame1, text="Open", command=cmd_open)
-    button3 = tk.Button(frame1, text="FreePlay", command=cmd_free)
-    button4 = tk.Button(frame1, text="Quit", command=cmd_quit)
+    button1 = tk.Button(frame1, text="Continue", width=12, command=cmd_continue)
+    button2 = tk.Button(frame1, text="Render", width=12, command=cmd_render)
+    button3 = tk.Button(frame1, text="Open", width=12, command=cmd_open)
+    button4 = tk.Button(frame1, text="FreePlay", width=12, command=cmd_free)
     button1.grid(row=0)
     button2.grid(row=1)
     button3.grid(row=2)
@@ -97,11 +104,11 @@ def select_window():
     entry1 = tk.Entry(frame2, width=6, justify=tk.RIGHT)  # 再生位置分
     label = tk.Label(frame2, text=":")
     entry2 = tk.Entry(frame2, width=6)  # 再生位置秒
-    button4 = tk.Button(frame2, text="Play", command=cmd_play)
+    button5 = tk.Button(frame2, text="Play", width=12, command=cmd_play)
     entry1.grid(row=0, column=0, sticky=tk.E)
     label.grid(row=0, column=1)
     entry2.grid(row=0, column=2, sticky=tk.W)
-    button4.grid(row=1, column=0, columnspan=3)
+    button5.grid(row=1, column=0, columnspan=3)
 
     frame1.grid(row=0, column=0)
     frame2.grid(row=0, column=1)
@@ -111,12 +118,17 @@ def select_window():
     return select
 
 
+def load_project(path):
+    pass
+
+
 pygame.init()
 ctypes.windll.user32.SetProcessDPIAware()  # ウィンドウサイズの誤挙動を防ぐ
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
 clock = pygame.time.Clock()
 running = True
+last_drop = 0
 pre_global_ysd = global_yspd
 path = ""
 frame = 0
@@ -180,49 +192,72 @@ def drop_drop():
     )
 
 
+def get_pressed():
+    pressed = []
+    for event in pygame.event.get():
+        if event.type == pygame.KEYDOWN:
+            pressed.append(pygame.key.name(event.key))
+    return pressed
+
+
 while running:
-    if path == "":
-        open_project()
+    if (
+        (path == "" and not state == "FREE")
+        or "r" in get_pressed()
+        or state == "FINISH"
+    ):
+        if path == "":
+            open_project()
         select = select_window()
-        if select[0] == "RENDER":
+        if select[0] == "CONTINUE":
+            pass
+        elif select[0] == "RENDER":
             state = "RENDER"
             rec.key(SCREEN_WIDTH, SCREEN_HEIGHT, 60)
             frame = 0
         elif select[0] == "OPEN":
+            if state == "RENDER":
+                rec.stop()
             continue
-        elif select[0] == "QUIT":
-            break
+        elif select[0] == "FREE":
+            if state == "RENDER":
+                rec.stop()
+            state = "FREE"
         elif select[0] == "PLAY":
             frame = select[1]
+            state = "PLAY"
 
-    time += 1
+    frame += 1
     screen.fill((0, 0, 0))
     surface.fill((0, 0, 0))
 
-    # マウス座標で動かす(編集モード実装時に消す)
-    wind = (pygame.mouse.get_pos()[0] - SCREEN_WIDTH / 2) / 5
-    global_yspd = pygame.mouse.get_pos()[1] / 10
+    if state == "FREE":
+        # マウス座標で動かす
+        wind = (pygame.mouse.get_pos()[0] - SCREEN_WIDTH / 2) / 5
+        global_yspd = pygame.mouse.get_pos()[1] / 10
 
     if 0 < freq < 1:
-        if time - last_drop >= 1 / freq:
+        if frame - last_drop >= 1 / freq:
             drop_drop()
-            last_drop = time
+            last_drop = frame
     else:
         for i in range(int(freq)):
             drop_drop()
-        last_drop = time
+        last_drop = frame
 
     for x in drops:
         x.yspd += global_yspd - pre_global_ysd
     pre_global_ysd = global_yspd
 
     [x.update() for x in drops]
-    # rec.draw(surface)
+    if state == "RENDER":
+        rec.draw(surface)
     screen.blit(surface, (0, 0))
     pygame.display.flip()
     clock.tick(FRAME_RATE)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            # rec.stop()
+            if state == "RENDER":
+                rec.stop()
             running = False
